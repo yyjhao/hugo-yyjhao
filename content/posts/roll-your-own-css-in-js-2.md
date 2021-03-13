@@ -1,39 +1,31 @@
----
-title: "Roll Your Own CSS-in-JS Library (2) - Dynamic Styles"
-date: 2021-03-06T21:46:25-08:00
-draft: true
----
++++
+title = "Roll Your Own CSS-in-JS Library (2) - Dynamic Styles"
+date = 2021-03-12T01:00:00Z
++++
 
-In our last post we developed a simple CSS-in-JS library, but it was missing an important
+In our [last post]({{< relref "/posts/roll-your-own-css-in-js.md" >}})
+we developed a simple CSS-in-JS library, but it was missing an important
 feature - supporting dynamic styles. We will patch that in this post.
 
-# What are dynamic styles
+# End result
 
-It's more interesting to talk about dynamic styles with some ideas of component. In this
-post, we will use React as an example. Here's one example:
+Dynamic styles are more useful when we are building components. In this
+post, we will use React as our component library. Here's how our library
+may be used in production:
 
-```typescript
-interface Props {
-  mode: "light" | "dark";
-  size: "big" | "small";
-}
+<iframe src="https://codesandbox.io/embed/youthful-thunder-iio7y?fontsize=14&hidenavigation=1&theme=dark"
+     style="width:100%; height:500px; border:0; border-radius: 4px; overflow:hidden;"
+     title="youthful-thunder-iio7y"
+     allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+     sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+   ></iframe>
 
-const Block = styled((props: Props) => ({
-  border: "1px solid black",
-  background: props.mode === "light" ? "white" : "black",
-  fontSize: props.size === "big" ? "2em" : "1em",
-}));
+# Dynamic class names
 
-ReactDOM.render(<Block mode="light" size="big" />, container);
-```
-
-We created a styled component with some dynamic styles based on the value of props.
-
-# Dynamic Class Names
-
-This is the simplest approach that requires making the smallest change to your little
-library. We make it generate the classname based on the props being passed, then supply
-that to our react component. This means that `Block` under the hood should look like this:
+This is the simplest approach that requires making the smallest change to
+our little library. All we do is to it generate the class name based on the
+props being passed, then supply that to our react component. This means
+that `Block` under the hood should look like this:
 
 ```typescript
 const classNameGenerator = styleDef.dynamicStyle({
@@ -54,31 +46,34 @@ class StyleDef {
     declaration: (props: Props) => CssLikeObject
   ): (props: Props) => string {
     return (props) => {
-      this.staticStyle(declaration(props));
+      return this.staticStyle(declaration(props));
     };
   }
 
-  //...other code
+  //...
 }
 ```
 
-This works fine, but there's a big issue here - every time we call static style, we create
-a new css class name and a set of corresponding rules! We can fix this by creating some kind
-of hash map to avoid re-computation.
+Done? Well, this works, but there's a big issue here - every time
+`staticStyle` is executed, a new css class name and a set of corresponding
+rules are created! We can fix this by doing a bit of memoization.
 
 ```typescript
 class StyleDef {
   dynamicStyle<Props>(
     declaration: (props: Props) => CssLikeObject
   ): (props: Props) => string {
-    const memo = new Map<string, string>;
+    // Makes from css rule to class name
+    const memo = new Map<string, string>();
     return (props) => {
+      // JSON.stringify is not deterministic, but good enough
+      // for our demo.
       const hash = JSON.stringify(props);
-      if (memo.has(key)) {
-        return memo.get(key);
+      if (memo.has(hash)) {
+        return memo.get(hash)!;
       }
       const result = this.staticStyle(declaration(props));
-      memo.set(key, result);
+      memo.set(hash, result);
       return result;
     };
   }
@@ -86,8 +81,8 @@ class StyleDef {
 }
 ```
 
-This fixes the performance issue we talked about above. However, there are still
-other issues with this approach.
+This fixes the performance issue we talked about above and is probably a
+good enough MVP, but there are still other issues.
 
 # Issues
 
@@ -102,7 +97,7 @@ styleDef.dynamicStyle((left: number) => {
 });
 ```
 
-The usual solution is to use inline styles for these kind of styles.
+One solution is to use inline styles for these properties.
 
 ## No more descendant selectors
 
@@ -110,38 +105,204 @@ With `staticStyle` we can do something like this
 
 ```typescript
 const someClass = styleDef.staticStyle({
-  //...
+  color: "green",
 });
 
 const otherClass = styleDef.staticStyle({
-  [someClass]: {
-    //...
+  ":hover": {
+    [someClass]: {
+      color: "red",
+    },
   },
 });
 ```
 
-This is not trivial with `dynamicStyle` - there can be multiple class names. We can
-try to pre-generate all possible class names assuming that we disallow the unbounded
-example above somehow, but that makes our API rather awkward because we need to supply
-the values of all possible props.
+This is not trivial with `dynamicStyle`. One solution here is to use CSS
+variables, like this:
 
-## Static code gen is impossible
+```typescript
+const someClass = styleDef.staticStyle({
+  color: "var(--someClassColor)",
+});
 
-Similar to the issues above, without making the API awkward, we can't pre-generate all
-classes at build time.
+const otherClass = styleDef.dynamicStyles((props: { isRed: boolean }) => ({
+  "--someClassColor": "green",
+  ":hover": {
+    "--someClassColor": props.isRed ? "red" : "blue",
+  },
+}));
+```
+
+## Generating CSS code during build time is hard
+
+Unless we can iterate through all possible values of `props` at build time,
+we won't be able to generate all CSS rules. We can also settle with some
+'default props' and just generate that single one, but that's not ideal.
 
 ## Large generated stylesheet
 
-To some extend this is an issue with our previous static-only code as well, but dynamic
-styles makes the issue more pronounced. In our example, even though `border` stays the
-same, each class will contain this same property. In practice, there may be a lot more
-static properties in this kind of dynamic styled components.
+To some extend this can be an issue with our previous static-only library as
+well, but having dynamic styles makes the issue more pronounced. In our
+example, even though `border` stays the same, each new class will contain
+this same property. We can split out the static styles into its own
+`staticStyle` call, but that's a bit awkward.
 
-# Optimization - atomic css
+One solution here is to use the atomic css pattern, detailed below.
 
-This is one direction we can go to solve some issues above.
+# Optimization - Atomic CSS
+
+What we are doing doesn't exactly match
+[atomic css](https://css-tricks.com/lets-define-exactly-atomic-css/),
+but the end result is similar.
+
+The apporach is to programmatically break down each 'class' into
+multiple classes, each with only one css property. Then, we will similarly
+memoize the class names for each rules. This way, if a CSS property-value
+is repeated across multiple style definitions, all of those styles will
+share the same class name.
+
+For example, suppose we render our example `Block` twice, once with
+`{ mode: "light"; size: "big" }` and once with
+`{ mode: "dark"; size: "big" }`. This will create the following css rules:
+
+```css
+.c1 {
+  border: 1px solid black;
+}
+
+.c2 {
+  background: white;
+}
+
+.c3 {
+  font-size: 2em;
+}
+
+.c4 {
+  background: black;
+}
+```
+
+We will then supply to the first call the following classnames:
+`"c1 c2 c3"`, and to the second call: `"c1 c4 c3"`.
+
+## Implementation
+
+Firstly, we will write a helper to split out each style declaration into
+multiple atomic declarations.
+
+```typescript
+function isolateDeclaration(
+  declaration: CssLikeObject,
+  prefix: string[] = []
+): CssLikeObject[] {
+  return Object.keys(declaration)
+    .sort()
+    .flatMap((key) => {
+      const value = (<any>declaration)[key];
+
+      if (value instanceof Object) {
+        return isolateDeclaration((<any>declaration)[key], [...prefix, key]);
+      } else {
+        // Expand the prefix array, e.g. if prefix = ['a', 'b'],
+        // we return {a: {b: declaration}}
+        return prefix.reduceRight(
+          (result, cur) => {
+            return {
+              [cur]: result,
+            };
+          },
+          {
+            [key]: declaration[key],
+          }
+        );
+      }
+    });
+}
+```
+
+And example output:
+
+```
+> isolateDeclaration({
+...     ":hover": {
+.....         color: "green"
+.....     },
+...     color: "red"
+... })
+[ { ':hover': { color: 'green' } }, { color: 'red' } ]
+```
+
+Next we will update our `staticStyle` and `dynamicStyle` method.
+
+```typescript
+class StyleDef {
+  #memo = new Map<string, string>();
+  staticStyle(declaration: CssLikeObject): string[] {
+    return isolateDeclaration(declaration).map((d) => {
+      const hash = JSON.stringify(d);
+      if (this.#memo.has(hash)) {
+        return this.#memo.get(hash);
+      }
+      const selector = this.#generateSelector();
+      const ruleStrings = nestedDeclarationToRuleStrings(selector, declaration);
+      ruleStrings.forEach((ruleString) =>
+        this.#sheet.insertRule(ruleString, this.#sheet.cssRules.length)
+      );
+      this.#memo.set(hash, selector);
+      return selector;
+    });
+  }
+
+  dynamicStyle<Props>(
+    declaration: (props: Props) => CssLikeObject
+  ): (props: Props) => string[] {
+    return (props) => {
+      return this.staticStyle(declaration(props));
+    };
+  }
+  //...
+}
+```
+
+We updated the function interface to return an array instead of a single string, because
+we will now most likely return multiple class names. Moreover, we move the memoization
+into the class state since we want each staticStyle call to share the memoization.
+
+Interestingly we also reverted our optimization for `dynamicStyle` since memoization
+is now done at the `staticStyle` level, so we no longer need to worry about
+creating a new rule per call.
+
+## React factory
+
+Finally let's wrap this up by implementing what we have promised at the start of this
+post - a React factory to create styled components.
+
+```typescript
+const styleDef = new StyleDef("somePrefix");
+
+function styled<T extends {}>(
+  declaration: (props: T) => CssLikeObject
+) {
+  const dynamicFactory = styleDef(declaration);
+  const result: any = React.forwardRef((props: T, ref) => {
+      return React.createElement("div", {
+          ...props,
+          className: [...dynamicFactory(props), (<any>props).className ?? ""].join(" ")
+          ref
+      });
+  });
+  return result;
+}
+```
 
 # Other ideas
 
-In our next post, we will explore a different idea altogether - tweaking the API interface
-and using CSS variables.
+We haven't really dealt with the other issues mentioned above other than the issue of
+generating a large stylesheet. Our API for the react component is also a bit awkward:
+if we intend the component to only have static styles, we have to pass something like
+`() => CssLikeObject`. We can work around this by trying to allow both `(T) => CssLikeObject`
+and `CssLikeObject`, but can we come up with something more elegant than that?
+
+In our next post, we will resolve all of these issues by switching to a different
+approach - using CSS variables.

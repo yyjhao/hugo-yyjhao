@@ -1,8 +1,6 @@
 +++
 date = 2021-03-07T01:00:00Z
 title = "Roll Your Own CSS-in-JS Library (1) - Introduction"
-feature = "image/page-default.webp"
-comments = true
 +++
 
 CSS-in-JS is an idea to tackle various issues with CSS by writing them in
@@ -19,125 +17,20 @@ _Credit: some code here is inspired by [nano-css](https://github.com/streamich/n
 
 We will build a simple library that allows us to do this:
 
-```typescript
-const s = new StyleDef("ExampleTest");
-// A fancy shorthand
-const css = s.staticStyle.bind(s);
+<iframe src="https://codesandbox.io/embed/floral-water-48n9c?fontsize=14&hidenavigation=1&module=%2Fsrc%2FApp.tsx&theme=dark"
+     style="width:100%; height:500px; border:0; border-radius: 4px; overflow:hidden;"
+     title="floral-water-48n9c"
+     allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+     sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+   ></iframe>
 
-// No react for now so let's use DOM APIs
-const element = document.createElement("div");
-element.innerText = "test";
-element.className = css({
-  color: "blue",
-  ":hover": {
-    color: "green",
-  },
-});
-document.body.append(element);
-```
-
-the result looks like this:
-
-<div class="test-example">
-</div>
-
-<script>
-var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, privateMap, value) {
-    if (!privateMap.has(receiver)) {
-        throw new TypeError("attempted to set private field on non-instance");
-    }
-    privateMap.set(receiver, value);
-    return value;
-};
-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, privateMap) {
-    if (!privateMap.has(receiver)) {
-        throw new TypeError("attempted to get private field on non-instance");
-    }
-    return privateMap.get(receiver);
-};
-var _selectorCounter, _sheet, _prefix, _generateSelector;
-function joinSelectors(parentSelector, nestedSelector) {
-    if (nestedSelector[0] === ":") {
-        return parentSelector + nestedSelector;
-    }
-    else {
-        return `${parentSelector} ${nestedSelector}`;
-    }
-}
-function nestedDeclarationToRuleStrings(rootClassName, declaration) {
-    const result = [];
-    // We use a helper here to walk through the tree efficiently
-    function _helper(selector, declaration, ruleStrings) {
-        // We split the props into either nested css rules
-        // or plain css props.
-        const nestedNames = [];
-        const cssProps = {};
-        for (let prop in declaration) {
-            const value = declaration[prop];
-            if (value instanceof Object) {
-                nestedNames.push(prop);
-            }
-            else {
-                cssProps[prop] = value;
-            }
-        }
-        const lines = [];
-        // Collect all generated css rules.
-        lines.push(`${selector} {`);
-        for (let prop in cssProps) {
-            // collect the top level css rules
-            lines.push(`${prop}:${cssProps[prop]};`);
-        }
-        lines.push("}");
-        ruleStrings.push(lines.join("\n"));
-        // Go through all nested css rules, generate string css rules
-        // and collect them
-        nestedNames.forEach((nestedSelector) => _helper(joinSelectors(selector, nestedSelector), declaration[nestedSelector], ruleStrings));
-    }
-    _helper(rootClassName, declaration, result);
-    return result;
-}
-class StyleDef {
-    constructor(prefix) {
-        _selectorCounter.set(this, 0);
-        _sheet.set(this, void 0);
-        _prefix.set(this, void 0);
-        _generateSelector.set(this, () => {
-            var _a;
-            return `${__classPrivateFieldGet(this, _prefix)}-${__classPrivateFieldSet(this, _selectorCounter, (_a = +__classPrivateFieldGet(this, _selectorCounter)) + 1), _a}`;
-        });
-        const sheetElement = document.createElement("style");
-        document.head.appendChild(sheetElement);
-        __classPrivateFieldSet(this, _sheet, sheetElement.sheet);
-        __classPrivateFieldSet(this, _prefix, prefix);
-    }
-    staticStyle(declaration) {
-        const selector = __classPrivateFieldGet(this, _generateSelector).call(this);
-        const ruleStrings = nestedDeclarationToRuleStrings("." + selector, declaration);
-        ruleStrings.forEach((ruleString) => __classPrivateFieldGet(this, _sheet).insertRule(ruleString, __classPrivateFieldGet(this, _sheet).cssRules.length));
-        return selector;
-    }
-}
-_selectorCounter = new WeakMap(), _sheet = new WeakMap(), _prefix = new WeakMap(), _generateSelector = new WeakMap();
-
-const s = new StyleDef("ExampleTest");
-const element = document.createElement("div");
-element.innerText = "test";
-element.className = s.staticStyle({
-    color: "blue",
-    ":hover": {
-        color: "green",
-    },
-});
-document.querySelector(".test-example").appendChild(element);
-</script>
-
-We will expand this to support dynamic styles in the next post. For now, the
-library is only limited to static styles.
+We will expand this to support dynamic styles in the
+[next post]({{< relref "/posts/roll-your-own-css-in-js-2" >}}).
+For now, the library is only limited to static styles.
 
 # Using the CSSStyleSheet API
 
-This is a relatively obscured DOM API that allows programmatic manipulation of CSS rules.
+This is a relatively obscure DOM API that allows programmatic manipulation of CSS rules.
 More details can be found on [mdn](https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet).
 
 Here's a high level overview of how to use this API for our purpose:
@@ -179,7 +72,7 @@ import type * as CSS from "csstype";
 
 type CssLikeObject =
   | {
-      [selector: string]: CSS.PropertiesHyphen;
+      [selector: string]: CSS.PropertiesHyphen | CssLikeObject;
     }
   | CSS.PropertiesHyphen;
 ```
@@ -232,15 +125,11 @@ a string. Comments inline.
 ```typescript
 function nestedDeclarationToRuleStrings(
   rootClassName: string,
-  declaration: CssLikeObject | CSS.PropertiesHyphen
+  declaration: CssLikeObject
 ): string[] {
   const result: string[] = [];
   // We use a helper here to walk through the tree recursively
-  function _helper(
-    selector: string,
-    declaration: CssLikeObject | CSS.PropertiesHyphen,
-    ruleStrings: string[]
-  ) {
+  function _helper(selector: string, declaration: CssLikeObject) {
     // We split the props into either nested css rules
     // or plain css props.
     const nestedNames: string[] = [];
@@ -267,25 +156,24 @@ function nestedDeclarationToRuleStrings(
 
     // Each string has to be a complete rule, not just a single
     // property
-    ruleStrings.push(lines.join("\n"));
+    result.push(lines.join("\n"));
 
     // Go through all nested css rules, generate string css rules
     // and collect them
     nestedNames.forEach((nestedSelector) =>
       _helper(
         joinSelectors(selector, nestedSelector),
-        (<any>declaration)[nestedSelector],
-        ruleStrings
+        (<any>declaration)[nestedSelector]
       )
     );
   }
-  _helper(rootClassName, declaration, result);
+  _helper("." + rootClassName, declaration);
   return result;
 }
 ```
 
-Notice that there's `joinSelector` function - this is because we need to treat states and
-psudoelements differently from decendant selectors.
+We also introduced a `joinSelector` function because we need to treat
+states and psudoelements differently from decendant selectors.
 
 ```typescript
 function joinSelectors(parentSelector: string, nestedSelector: string) {
@@ -303,9 +191,9 @@ We haven't really talked about generating class names yet. Here we are going to
 go with a simple counter. In some cases a stable hash may be better, but for our
 little toy example this is sufficient.
 
-Having a counter introduces some states. Plus, we already introduce some states earlier
-by creating a style element. So it's time to make a class for all these. We are going
-to call this `StyleDef`.
+Having a counter introduces some states. Plus, we need to create a style
+element, which is itself a state. It's time to make a class for all these.
+We are going to call this `StyleDef`.
 
 ```typescript
 class StyleDef {
@@ -322,10 +210,7 @@ class StyleDef {
 
   staticStyle(declaration: CssLikeObject): string {
     const selector = this.#generateSelector();
-    const ruleStrings = nestedDeclarationToRuleStrings(
-      "." + selector,
-      declaration
-    );
+    const ruleStrings = nestedDeclarationToRuleStrings(selector, declaration);
     ruleStrings.forEach((ruleString) =>
       this.#sheet.insertRule(ruleString, this.#sheet.cssRules.length)
     );
@@ -341,99 +226,12 @@ class StyleDef {
 We also introduce a `prefix` string so that multiple `StyleDef`s won't create classes that
 conflict with each other.
 
-# Final source code
-
-```typescript
-import type * as CSS from "csstype";
-
-type CssLikeObject =
-  | {
-      [selector: string]: CSS.PropertiesHyphen;
-    }
-  | CSS.PropertiesHyphen;
-function joinSelectors(parentSelector: string, nestedSelector: string) {
-  if (nestedSelector[0] === ":") {
-    return parentSelector + nestedSelector;
-  } else {
-    return `${parentSelector} ${nestedSelector}`;
-  }
-}
-function nestedDeclarationToRuleStrings(
-  rootClassName: string,
-  declaration: CssLikeObject | CSS.PropertiesHyphen
-): string[] {
-  const result: string[] = [];
-  function _helper(
-    selector: string,
-    declaration: CssLikeObject | CSS.PropertiesHyphen,
-    ruleStrings: string[]
-  ) {
-    const nestedNames: string[] = [];
-    const cssProps: CSS.PropertiesHyphen = {};
-
-    for (let prop in declaration) {
-      const value = (<any>declaration)[prop];
-
-      if (value instanceof Object) {
-        nestedNames.push(prop);
-      } else {
-        (<any>cssProps)[prop] = value;
-      }
-    }
-
-    const lines: string[] = [];
-    lines.push(`${selector} {`);
-    for (let prop in cssProps) {
-      lines.push(`${prop}:${(<any>cssProps)[prop]};`);
-    }
-    lines.push("}");
-
-    ruleStrings.push(lines.join("\n"));
-
-    nestedNames.forEach((nestedSelector) =>
-      _helper(
-        joinSelectors(selector, nestedSelector),
-        (<any>declaration)[nestedSelector],
-        ruleStrings
-      )
-    );
-  }
-  _helper(rootClassName, declaration, result);
-  return result;
-}
-class StyleDef {
-  #selectorCounter = 0;
-  #sheet: CSSStyleSheet;
-  #prefix: string;
-
-  constructor(prefix: string) {
-    const sheetElement = document.createElement("style");
-    document.head.appendChild(sheetElement);
-    this.#sheet = sheetElement.sheet!;
-    this.#prefix = prefix;
-  }
-
-  staticStyle(declaration: CssLikeObject): string {
-    const selector = this.#generateSelector();
-    const ruleString = nestedDeclarationToRuleStrings(
-      "." + selector,
-      declaration
-    );
-    ruleStrings.forEach((ruleString) =>
-      this.#sheet.insertRule(ruleString, this.#sheet.cssRules.length)
-    );
-    return selector;
-  }
-
-  #generateSelector = () => {
-    return `${this.#prefix}-${this.#selectorCounter++}`;
-  };
-}
-```
+With that, we are done! You can play with the code in
+[here](https://codesandbox.io/s/floral-water-48n9c?file=/src/css_in_js.ts).
 
 # Issues with CSS-in-JS in general
 
-We are done! Now that we have built a small library, it's time to talk about some issues
+Now that we have built a small library, it's time to talk about some issues
 with CSS-in-JS frameworks.
 
 ## Performance
