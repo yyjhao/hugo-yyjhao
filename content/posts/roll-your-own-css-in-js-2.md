@@ -304,5 +304,6 @@ if we intend the component to only have static styles, we have to pass something
 `() => CssLikeObject`. We can work around this by trying to allow both `(T) => CssLikeObject`
 and `CssLikeObject`, but can we come up with something more elegant than that?
 
-In our next post, we will resolve all of these issues by switching to a different
-approach - using CSS variables.
+In our [next post]({{< relref "/posts/roll-your-own-css-in-js-2.md" >}}),
+we will resolve all of these issues by switching to a different approach -
+using CSS variables.

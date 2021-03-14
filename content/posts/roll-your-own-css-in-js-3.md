@@ -1,8 +1,7 @@
----
-title: "Roll Your Own CSS-in-JS Library (3) - Using CSS Variables"
-date: 2021-03-12T21:48:01-08:00
-draft: true
----
++++
+title = "Roll Your Own CSS-in-JS Library (3) - Using CSS Variables"
+date = 2021-03-13T01:00:00Z
++++
 
 In this post we will discard our changes in the
 [previous post]({{< relref "/posts/roll-your-own-css-in-js-3" >}})
@@ -278,4 +277,55 @@ function styled<T extends {}>(
 }
 ```
 
-This is very similar to what we have before, except we now
+This is very similar to what we have before, but it works just fine if we
+pass in a static style. Moreover, if we take a look at the few issues we
+mentioned in the last post, because we generate only a single class per
+style:
+
+1. There's no worry with an unbounded number of class names (duh!)
+2. Descendant selector will work
+3. Static extraction (generating CSS code during build time) is doable
+
+# Issues
+
+## Large generated stylesheet
+
+The approach detailed in this post doesn't try to avoid generating
+duplicated styles across different style definitions. However, we can still
+apply the same atomic CSS strategy to this approach, so this is not really
+an inherent issue with the approach of using CSS variables.
+
+## Restricted syntax
+
+This may not be a big deal, but we had to switch our API to be able to
+detect dynamic rules. This means that we can't do something like this
+
+```typescript
+const Block = styled((props: Props) =>
+  props.isByWidth
+    ? {
+        width: "100px",
+      }
+    : {
+        height: "100px",
+      }
+);
+```
+
+Again we can achive the same result with either API, but to some, the above
+may be a bit cleaner.
+
+## Performance overhead?
+
+As with anything fancy, CSS variables probably come with some overhead.
+[This post](https://blog.jiayihu.net/css-custom-properties-performance-in-2018/)
+mentions the fact that CSS variable can slow down startup time, while
+[another post](https://lisilinhart.info/posts/css-variables-performance/)
+talks about some gotchas with scoping. Some more proper investigation
+is likely warranted though, as it's possible that the issue in the first
+post was due to the scoping issue mentioned in the second.
+
+More importantly, because it's a lot easier to perform static extraction
+with this approach, we can likely reduce the performance footprint compared
+to our previous approach. We will talk about static extraction in our next
+post.
