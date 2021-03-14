@@ -5,6 +5,7 @@ theme = "hugo-notepadio"
 sectionPagesMenu = "main"
 disqusShortname = "yyjhao"
 copyright = "©2021 Yujian Yao"
+googleAnalytics = "UA-192108237-1"
 
 [Author]
     name = "Yujian Yao"
