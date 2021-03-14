@@ -1,7 +1,7 @@
 baseURL = "https://yyjhao.com/"
 languageCode = "en-us"
 title = "yyjhao"
-theme = "hugo-notepadium"
+theme = "hugo-notepadio"
 sectionPagesMenu = "main"
 disqusShortname = "yyjhao"
 copyright = "©2021 Yujian Yao"
@@ -10,6 +10,7 @@ copyright = "©2021 Yujian Yao"
     name = "Yujian Yao"
 
 [markup]
+  defaultMarkdownHandler = "blackfriday"
   [markup.highlight]
     anchorLineNos = false
     codeFences = true

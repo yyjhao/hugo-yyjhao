@@ -8,7 +8,16 @@ In this post we will discard our changes in the
 [previous post]({{< relref "/posts/roll-your-own-css-in-js-3" >}})
 and switch to a new approach.
 
-# CSS Variables
+# End result
+
+<iframe src="https://codesandbox.io/embed/gracious-worker-gl9vn?fontsize=14&hidenavigation=1&theme=dark"
+     style="width:100%; height:500px; border:0; border-radius: 4px; overflow:hidden;"
+     title="gracious-worker-gl9vn"
+     allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+     sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+   ></iframe>
+
+# CSS variables
 
 [CSS variables](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
 are also known as CSS Custom Properties. At a very high level:
@@ -19,15 +28,16 @@ are also known as CSS Custom Properties. At a very high level:
 2. We can then read the value of a variable and supply it to some CSS
    property
    with the `var()` function, e.g. `color: var(--theme-color);`
-3. CSS Variables will cascade into inner components.
+3. CSS Variables will cascade into inner elements.
 
 # Approach
 
-We will update our CSS rule generation code to dynamic properties with CSS
-variables, we then set the value of that variable using inline styles. This
-way, we will generate only a single class name per dynamic style definition.
+We will update our CSS rule generation code to support dynamic properties
+with CSS variables, we then set the value of each variable using inline
+styles. This way, we will generate only a single class name per dynamic
+style.
 
-Take this styled component we built in the last post as an example
+Take this styled component we built in the last post as an example:
 
 ```typescript
 const Block = styled((props: Props) => ({
@@ -47,7 +57,7 @@ We should generate a CSS rule that looks like this
 }
 ```
 
-then we need to apply the following inline style
+then we need to apply the following inline style:
 
 ```jsx
 <div
@@ -62,10 +72,10 @@ then we need to apply the following inline style
 
 With this approach, we need to know exactly what properties are dynamic. Our
 previous API for dynamic styles doesn't work any more. Let's update our
-CssLikeObject definition
+`CssLikeObject` definition:
 
 ```typescript
-type DynamicSssProperties<Props = {}> = {
+type DynamicCssProperties<Props = {}> = {
   [k in keyof CSS.PropertiesHyphen]:
     | CSS.PropertiesHyphen[k]
     | ((props: Props) => CSS.PropertiesHyphen[k]);
@@ -73,9 +83,9 @@ type DynamicSssProperties<Props = {}> = {
 
 type CssLikeObject<Props = {}> =
   | {
-      [selector: string]: DynamicSssProperties<Props>;
+      [selector: string]: DynamicCssProperties<Props>;
     }
-  | DynamicSssProperties<Props>;
+  | DynamicCssProperties<Props>;
 ```
 
 With this new API, our styled component now looks like this:
@@ -93,8 +103,8 @@ const Block = styled({
 First, let's define the new behavior. `nestedDeclarationToRuleStrings`
 should take in a `rootClassName` and a new `CssLikeObject` as before.
 However, it's not sufficient to just output some CSS rules - we also
-need to know what CSS variables are created and how should those CSS
-variables be filled. The new function interface may look like this
+need to know what CSS variables are created and how those CSS variables
+should be filled. We can do that with this new function interface:
 
 ```typescript
 function nestedDeclarationToRuleStrings<Props = {}>(
@@ -102,17 +112,16 @@ function nestedDeclarationToRuleStrings<Props = {}>(
   declaration: CssLikeObject<Props>
 ): {
   rules: string[];
-  variablesValueMapping: {
-    [s: string]: (props: Props) => string;
-  };
+  variablesValueMapping: (props: Props) => CSS.PropertiesHyphen;
 };
 ```
 
 In addition to the original rules string, we also provide a way to compute
-the values of variables. We will place the `rules` strings into our dynamic
-stylesheets and the `rootClassName` to the class name of our elements as
-before, but now we also need to compute the value of variables and place
-them into the inline styles of our elements as well.
+the values of all variables that the rules string may contain. We will
+place the `rules` strings into our dynamic stylesheets and the
+`rootClassName` to the class name of our elements as before, but now we
+also need to compute the values of variables and place them into the inline
+styles of our elements.
 
 Before doing that, let's update the implementation of
 `nestedDeclarationToRuleStrings`
@@ -123,11 +132,7 @@ function nestedDeclarationToRuleStrings<Props = {}>(
   declaration: CssLikeObject<Props>
 ): {
   rules: string[];
-  variablesValueMapping: (
-    props: Props
-  ) => {
-    [s: string]: string;
-  };
+  variablesValueMapping: (props: Props) => CSS.PropertiesHyphen;
 } {
   const resultRules: string[] = [];
   const resultMapping: {
@@ -148,7 +153,7 @@ function nestedDeclarationToRuleStrings<Props = {}>(
     // We split the props into either nested dynamic css rules
     // or plain dynamic css props.
     const nestedNames: string[] = [];
-    const cssProps: DynamicSssProperties<Props> = {};
+    const cssProps: DynamicCssProperties<Props> = {};
 
     for (let prop in declaration) {
       const value = (<any>declaration)[prop];
@@ -205,7 +210,7 @@ function nestedDeclarationToRuleStrings<Props = {}>(
 Now we can update our `StyleDef` class. Notice that there's no longer a need
 to differentiate static and dynamic styles, so we will remove the
 `staticStyle` function and replace it with a more generic `style` function.
-All other utilities remain intact.
+All other utilities remain the same.
 
 ```typescript
 class StyleDef {
@@ -224,18 +229,14 @@ class StyleDef {
     declaration: CssLikeObject<Props>
   ): {
     className: string;
-    variablesValueMapping: (
-      props: Props
-    ) => {
-      [s: string]: string;
-    };
+    variablesValueMapping: (props: Props) => CSS.PropertiesHyphen;
   } {
     const selector = this.#generateSelector();
     const { rules, variablesValueMapping } = nestedDeclarationToRuleStrings(
       selector,
       declaration
     );
-    ruleStrings.forEach((ruleString) =>
+    rules.forEach((ruleString) =>
       this.#sheet.insertRule(ruleString, this.#sheet.cssRules.length)
     );
     return {
@@ -256,7 +257,7 @@ Next let's create a similar `styled` function
 const styleDef = new StyleDef("somePrefix");
 
 function styled<T extends {}>(
-  declaration: CssLikeObject<T>;
+  declaration: CssLikeObject<T;
 ) {
   const {
      className,
@@ -265,13 +266,16 @@ function styled<T extends {}>(
   const result: any = React.forwardRef((props: T, ref) => {
       return React.createElement("div", {
           ...props,
-          className: [className, props.className ?? ""].join(" "),
-          style: {{
+          className: [className, (<any>props).className ?? ""].join(" "),
+          style: {
              ...variablesValueMapping(props),
-             ...props.style
-          }}
+             ...(<any>props).style
+          },
           ref
       });
   });
   return result;
+}
 ```
+
+This is very similar to what we have before, except we now
