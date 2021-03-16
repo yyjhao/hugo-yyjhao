@@ -288,6 +288,12 @@ style:
 
 # Issues
 
+## Does not support IE
+
+IE doesn't support [CSS variables](https://caniuse.com/css-variables). Although
+if you still need to support IE in 2021, supporting CSS-in-JS will be the least
+of the troubles.
+
 ## Large generated stylesheet
 
 The approach detailed in this post doesn't try to avoid generating
