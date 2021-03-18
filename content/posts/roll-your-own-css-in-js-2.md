@@ -284,7 +284,7 @@ const styleDef = new StyleDef("somePrefix");
 function styled<T extends {}>(
   declaration: (props: T) => CssLikeObject
 ) {
-  const dynamicFactory = styleDef(declaration);
+  const dynamicFactory = styleDef.dynamicStyle(declaration);
   const result: any = React.forwardRef((props: T, ref) => {
       return React.createElement("div", {
           ...props,
@@ -304,6 +304,6 @@ if we intend the component to only have static styles, we have to pass something
 `() => CssLikeObject`. We can work around this by trying to allow both `(T) => CssLikeObject`
 and `CssLikeObject`, but can we come up with something more elegant than that?
 
-In our [next post]({{< relref "/posts/roll-your-own-css-in-js-2.md" >}}),
+In our [next post]({{< relref "/posts/roll-your-own-css-in-js-3.md" >}}),
 we will resolve all of these issues by switching to a different approach -
 using CSS variables.
