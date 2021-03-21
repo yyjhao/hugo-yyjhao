@@ -318,7 +318,7 @@ const Block = styled((props: Props) =>
 );
 ```
 
-Again we can achive the same result with either API, but to some, the above
+Again we can achieve the same result with either API, but to some, the above
 may be a bit cleaner.
 
 ## Performance overhead?

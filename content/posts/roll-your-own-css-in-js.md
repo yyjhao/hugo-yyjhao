@@ -173,7 +173,7 @@ function nestedDeclarationToRuleStrings(
 ```
 
 We also introduced a `joinSelector` function because we need to treat
-states and psudoelements differently from decendant selectors.
+states and psudoelements differently from descendant selectors.
 
 ```typescript
 function joinSelectors(parentSelector: string, nestedSelector: string) {

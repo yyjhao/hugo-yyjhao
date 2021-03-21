@@ -64,11 +64,11 @@ We will impose some restrictions here. In particular:
 1. All expressions in the function parameter of `styled` must be static.
    - This means that all static values needs to be inline constants.
 2. We will replace all function calls with `styled()`, i.e. `styled` doesn't need
-   to be imported, but devleopers also can't redefined `styled` to be something else
+   to be imported, but developers also can't redefined `styled` to be something else
 
 Then we will build a simple script that reads through only a _single_ js file,
 extracts these definitions, replaces them with a definition with some constant
-class name and generates a correspoding stylesheet.
+class name and generates a corresponding stylesheet.
 
 Since we are dealing with a single JS file at a time, our implementation can be
 encapsulated in the following function:
@@ -164,7 +164,7 @@ function checkArgument(node) {
         (node.value.type === "StringLiteral" ||
           node.value.type === "ArrowFunctionExpression") &&
         // The key can be either an identifier (e.g. a: "b"),
-        // or a string literar (e.g. "a": "b")
+        // or a string literal (e.g. "a": "b")
         (node.key.type === "Identifier" || p.key.type === "StringLiteral")
       );
     });
@@ -217,7 +217,7 @@ function nestedDeclarationToRuleStrings(rootClassName, declaration) {
     const lines = [];
     lines.push(`${selector} {`);
     for (let prop in cssProps) {
-      // Similaly We use to check if `typeof value !== "Function"`, now
+      // Similarly We use to check if `typeof value !== "Function"`, now
       // we check if value.type is defined.
       if (cssProps[prop].type) {
         lines.push(`${prop}:var(${_makeNewVariable(cssProps[prop])});`);
@@ -345,10 +345,10 @@ from our previous example. Click run to check out the output CSS and JS strings.
 # Last words
 
 While we simplified our extractor to make it almost not useful, our code generation
-is probably on the more complicated side. Most tools will try to gnenerate only
+is probably on the more complicated side. Most tools will try to generate only
 the class name and the list of variables to avoid being too specific to a framework.
 
-Also, depending on the level of dynamicness, we may not need CSS variables at all.
+Also, depending on where we specify the dynamic logics, we may not need CSS variables at all.
 Facebook's StyleX is such an example. The API allows for only static styles with
 'variants', and only generates class names. This makes static codegen simpler and
 removes the potential overhead of CSS variables.
