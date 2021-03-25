@@ -296,6 +296,16 @@ function styled<T extends {}>(
 }
 ```
 
+# Are dynamic styles really necessary?
+
+Probably not. After all, without CSS-in-JS, the usual pattern is to have some
+classes defined in css files, then reference them in the UI code. We can replicate
+that easily by generating these classes with static styles. This allows for writing
+CSS code in the same file/dependency tree as the JavaScript code, and the dynamic-ness
+is handled separately by the JavaScript UI logic instead of encapsulated in the
+CSS-in-JS magic. That being said, dynamic styles does provide convenience and some
+sort of elegance (depending on who you ask).
+
 # Other ideas
 
 We haven't really dealt with the other issues mentioned above other than the issue of

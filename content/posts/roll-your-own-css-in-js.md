@@ -3,13 +3,27 @@ date = 2021-03-07T01:00:00Z
 title = "Roll Your Own CSS-in-JS Library (1) - Introduction"
 +++
 
+# Introduction
+
 CSS-in-JS is an idea to tackle various issues with CSS by writing them in
 JavaScript (or whatever else that can compile to JavaScript, such as TypeScript).
 Some popular examples include libraries like [styled component](https://styled-components.com/),
 [emotion](https://github.com/emotion-js/emotion) and [JSS](https://cssinjs.org/).
 
-In this series, we will build a very simple CSS-in-JS library with minimal dependencies
-and walk through the basic ideas. We will use TypeScript to make the API clearer.
+I originally started this series to document some of my experiments with CSS-in-JS, but it later
+turned out to be a fun investigation project. In total, this series will cover
+
+1. The basic idea of run-time static CSS-in-JS (this post)
+2. [The basic idea of run-time dynamic CSS-in-JS]({{< relref "/posts/roll-your-own-css-in-js-2" >}})
+3. [The run-time dynamic CSS-in-JS with CSS variables]({{< relref "/posts/roll-your-own-css-in-js-3" >}})
+4. [An extremely simplified approach to build-time CSS-in-JS]({{< relref "/posts/roll-your-own-css-in-js-4" >}})
+5. [A simple approach to implementing tagged template based CSS-in-JS]({{< relref "/posts/roll-your-own-css-in-js-5" >}})
+
+Please note that this series focus on the high level ideas with a simple demo, so expect to notice
+a lot of missing features. In particular, there's no mention of at-rules or `&` parent selectors.
+Adding them shouldn't be very hard, but will likely make this series even longer.
+
+# The basic idea of run-time static CSS-in-JS
 
 _Credit: some code here is inspired by [nano-css](https://github.com/streamich/nano-css)._
 
