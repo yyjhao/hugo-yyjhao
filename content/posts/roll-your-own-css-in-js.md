@@ -66,7 +66,7 @@ a rule by:
 sheetElement.sheet.insertRule(ruleString, sheet.cssRules.length);
 ```
 
-With this API, we can implement a CSS-in-JS library by:
+With this API, we can implement a CSS-in-JS library like so:
 
 1. Generate a class name, then
 2. Attach the rules to that class name, then
@@ -79,7 +79,7 @@ With this API, we can implement a CSS-in-JS library by:
 Firstly, let's define the type of CSS objects. Here we want the ability to specify CSS rules
 with a nestable object representation so that we can specify rules with selectors.
 At the same time we want to be able to _not_ specify the root class name in the
-object and have it generated uniquely and when needed.
+object and automatically generate a unique one when necessary.
 
 ```typescript
 import type * as CSS from "csstype";

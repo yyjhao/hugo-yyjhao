@@ -23,7 +23,7 @@ may be used in production:
 # Dynamic class names
 
 This is the simplest approach that requires making the smallest change to
-our little library. All we do is to it generate the class name based on the
+our little library. Our approach will be to generate the class name based on the
 props being passed, then supply that to our react component. This means
 that `Block` under the hood should look like this:
 
@@ -88,8 +88,8 @@ good enough MVP, but there are still other issues.
 
 ## Unbounded number of class names
 
-In our toy example there can only be 4 combinations of class names. But it's easy to
-construct something that can have infinite number of possible props:
+In our toy example there can only be 4 possible sets of styles. But it's easy to
+construct something that can have an infinite number of possible props:
 
 ```typescript
 styleDef.dynamicStyle((left: number) => {
@@ -143,8 +143,8 @@ we won't be able to generate all CSS rules. We can also settle with some
 
 To some extend this can be an issue with our previous static-only library as
 well, but having dynamic styles makes the issue more pronounced. In our
-example, even though `border` stays the same, each new class will contain
-this same property. We can split out the static styles into its own
+example, even though `border` stays the same, each new class will repeat
+this property. We can split out the static styles into its own
 `staticStyle` call, but that's a bit awkward.
 
 One solution here is to use the atomic css pattern, detailed below.
@@ -183,7 +183,7 @@ For example, suppose we render our example `Block` twice, once with
 }
 ```
 
-We will then supply to the first call the following classnames:
+We will then pass to the first call the following classnames:
 `"c1 c2 c3"`, and to the second call: `"c1 c4 c3"`.
 
 ## Implementation
@@ -269,7 +269,7 @@ We updated the function interface to return an array instead of a single string,
 we will now most likely return multiple class names. Moreover, we move the memoization
 into the class state since we want each staticStyle call to share the memoization.
 
-Interestingly we also reverted our optimization for `dynamicStyle` since memoization
+Interestingly, we also reverted our optimization for `dynamicStyle` since memoization
 is now done at the `staticStyle` level, so we no longer need to worry about
 creating a new rule per call.
 

@@ -27,7 +27,7 @@ understand what "helpers" is pointing to - is it to some top level file called
 yet another file. Even worse, Due to the flexibility of JavaScript,
 `getColor` may also be defined in many interesting ways.
 
-A perfect extractor will need to somehow evaluate all of these code and generate
+A perfect extractor will need to somehow evaluate all of the code and generate
 the class name as well as the CSS code.
 
 At the same time, we should only extract the minimal amount of code necessary,

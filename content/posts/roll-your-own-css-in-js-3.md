@@ -278,9 +278,10 @@ function styled<T extends {}>(
 ```
 
 This is very similar to what we have before, but it works just fine if we
-pass in a static style. Moreover, if we take a look at the few issues we
-mentioned in the last post, because we generate only a single class per
-style:
+pass in a static style. In addition, if we take a look at the few issues we
+mentioned in the last post, there are a few benefits.
+
+Since we generate only a single class per style:
 
 1. There's no worry with an unbounded number of class names (duh!)
 2. Descendant selector will work
@@ -304,7 +305,7 @@ an inherent issue with the approach of using CSS variables.
 ## Restricted syntax
 
 This may not be a big deal, but we had to switch our API to be able to
-detect dynamic rules. This means that we can't do something like this
+detect dynamic rules. This means that we can't do something like this:
 
 ```typescript
 const Block = styled((props: Props) =>
