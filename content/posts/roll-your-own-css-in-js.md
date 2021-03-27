@@ -15,7 +15,7 @@ turned out to be a fun investigation project. In total, this series will cover
 
 1. The basic idea of run-time static CSS-in-JS (this post)
 2. [The basic idea of run-time dynamic CSS-in-JS]({{< relref "/posts/roll-your-own-css-in-js-2" >}})
-3. [The run-time dynamic CSS-in-JS with CSS variables]({{< relref "/posts/roll-your-own-css-in-js-3" >}})
+3. [Run-time dynamic CSS-in-JS with CSS variables]({{< relref "/posts/roll-your-own-css-in-js-3" >}})
 4. [An extremely simplified approach to build-time CSS-in-JS]({{< relref "/posts/roll-your-own-css-in-js-4" >}})
 5. [A simple approach to implementing tagged template based CSS-in-JS]({{< relref "/posts/roll-your-own-css-in-js-5" >}})
 
