@@ -26,7 +26,7 @@ googleAnalytics = "UA-192108237-1"
   [markup.goldmark.renderer]
     unsafe= true
 
-[Params]
+[params]
   style = "light"
   dateFormat = "Monday, January 2, 2006"
   fullRss = false
@@ -34,3 +34,11 @@ googleAnalytics = "UA-192108237-1"
   
   [params.comments]
     enable = true
+
+[[params.nav.custom]]
+  title = "RSS"
+  url = "/index.xml"
+
+[[params.nav.custom]]
+  title = "Github"
+  url = "https://github.com/yyjhao"
