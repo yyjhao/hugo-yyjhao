@@ -42,3 +42,8 @@ googleAnalytics = "UA-192108237-1"
 [[params.nav.custom]]
   title = "Github"
   url = "https://github.com/yyjhao"
+
+[taxonomies]
+  series = "series"
+  category = "categories"
+  tag = "tags"
