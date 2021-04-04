@@ -2,9 +2,8 @@
 date = 2021-03-07T01:00:00Z
 title = "Roll Your Own CSS-in-JS Library (1) - Introduction"
 series = ["roll-your-own-css-in-js"]
+tags = ["css-in-js", "css", "typescript", "dom"]
 +++
-
-# Introduction
 
 CSS-in-JS is an idea to tackle various issues with CSS by writing them in
 JavaScript (or whatever else that can compile to JavaScript, such as TypeScript).

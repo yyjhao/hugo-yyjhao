@@ -2,6 +2,7 @@
 title = "Roll Your Own CSS-in-JS Library (4) - Static Extraction"
 date = 2021-03-15T01:00:00Z
 series = ["roll-your-own-css-in-js"]
+tags = ["css-in-js", "css", "static evaluation", "babel", "visitor pattern", "javascript", "ast"]
 +++
 
 # Static extraction is HARD

@@ -6,12 +6,12 @@ sectionPagesMenu = "main"
 disqusShortname = "yyjhao"
 copyright = "©2021 Yujian Yao"
 googleAnalytics = "UA-192108237-1"
+metaDataFormat = "toml"
 
 [Author]
     name = "Yujian Yao"
 
 [markup]
-  defaultMarkdownHandler = "blackfriday"
   [markup.highlight]
     anchorLineNos = false
     codeFences = true

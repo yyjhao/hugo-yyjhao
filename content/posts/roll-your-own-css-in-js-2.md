@@ -2,6 +2,7 @@
 title = "Roll Your Own CSS-in-JS Library (2) - Dynamic Styles"
 date = 2021-03-12T01:00:00Z
 series = ["roll-your-own-css-in-js"]
+tags = ["css-in-js", "css", "react", "typescript"]
 +++
 
 In our [last post]({{< relref "/posts/roll-your-own-css-in-js.md" >}})
