@@ -1,16 +1,16 @@
 ---
-title: "Setup A Raspberry Pi As An Auto-refreshing Web Dashboard"
+title: "Set Up A Raspberry Pi As An Auto-refreshing Web Dashboard"
 date: 2021-04-03T01:00:00Z
 tags: ["raspberry-pi", "how-to", "nodejs"]
 ---
 
-# Setup a Raspberry Pi to run Chromium in kiosk mode
+# Set up a Raspberry Pi to run Chromium in kiosk mode
 
 _credit: This section is mostly based on
 https://die-antwort.eu/techblog/2017-12-setup-raspberry-pi-for-kiosk-mode/
 with some tweak to work with the auto-refresh section later._
 
-## Setup
+## Set up
 
 First, start with a fresh install of
 [Raspbian Lite](https://www.raspberrypi.org/software/operating-systems/) -
