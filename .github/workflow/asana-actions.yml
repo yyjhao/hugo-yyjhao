@@ -1,0 +1,13 @@
+name: Asana Action
+on:
+  push:
+jobs:
+  Update-on-PR:
+    runs-on: ubuntu-latest
+    steps:
+      - name: run action
+        uses: yyjhao/complete-asana-task-on-push@main
+        with:
+          asana-access-token: ${{ secrets.ASANA_TOKEN }}
+          task-comment: "Completed by commit: "
+          project-id: "1200620414195565"
